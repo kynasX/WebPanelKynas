@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Cpanel VIP V1 - Reseller Gaming</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+    :root{
+      --primary:#9f7aea; --secondary:#4c3fbc; --accent:#ff7edb;
+      --bg:#0a071a; --card:#141127; --text:#f2f2f2; --muted:#a099c0; --border:#2e2a55;
+    }
+    *{box-sizing:border-box;margin:0;padding:0;font-family:'Inter',sans-serif}
+    body{background:var(--bg);color:var(--text);overflow:hidden;}
+
+    /* BG Animasi */
+    .nebula{
+      position:fixed;inset:0;z-index:-3;
+      background:radial-gradient(ellipse at 20% 20%,rgba(159,122,234,.25) 0%,transparent 45%),
+                 radial-gradient(ellipse at 80% 80%,rgba(76,63,188,.28) 0%,transparent 50%),var(--bg);
+    }
+    .stars{
+      position:fixed;inset:0;z-index:-2;opacity:0.6;
+      background-image: radial-gradient(white 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+
+    /* Navigasi */
+    .topbar{
+      position:fixed;top:0;left:0;right:0;height:64px;
+      background:rgba(20,17,39,.85);backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+      display:flex;align-items:center;padding:0 20px;z-index:100;
+    }
+    .brand{
+      font-size:18px;font-weight:700;margin-right:auto;
+      background:linear-gradient(90deg,var(--primary),var(--accent));
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+    }
+    .nav-links a{
+      color:var(--muted);text-decoration:none;font-size:14px;
+      margin-left:15px;transition:0.3s;
+    }
+    .nav-links a.active{color:#fff;border-bottom:2px solid var(--primary);padding-bottom:4px;}
+
+    /* Layout Utama */
+    main{
+      height:100vh;padding:80px 20px 40px;overflow-y:auto;
+      scrollbar-width:thin;scrollbar-color:var(--primary) transparent;
+    }
+    .page{display:none;animation:fadeIn .5s ease}
+    .page.active{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+    .card{
+      background:var(--card);border:1px solid var(--border);
+      border-radius:16px;padding:24px;margin-bottom:20px;
+      box-shadow:0 8px 32px rgba(0,0,0,.3);
+    }
+    h2{font-size:22px;margin-bottom:8px}
+    .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+
+    /* Form Elements */
+    input,select{
+      width:100%;padding:12px;margin-bottom:15px;
+      background:#0f0d1f;border:1px solid var(--border);
+      color:#fff;border-radius:8px;outline:none;
+    }
+    input:focus,select:focus{border-color:var(--primary)}
+    label{font-size:13px;color:var(--muted);display:block;margin-bottom:5px}
+
+    button{
+      width:100%;padding:14px;background:var(--primary);
+      border:none;border-radius:8px;color:#fff;font-weight:600;
+      cursor:pointer;margin-top:5px;
+    }
+    button:active{transform:scale(0.98)}
+    
+    .stat{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid #2e2a55}
+    .stat:last-child{border:none}
+
+    /* Hasil & Loading */
+    .success-box{
+      background:rgba(46, 213, 115, 0.1);border:1px solid #2ed573;
+      padding:15px;border-radius:8px;margin-bottom:15px;font-size:14px;
+    }
+    .success-box a{color:#2ed573;text-decoration:underline}
+    .hidden{display:none}
+
+    .loading-overlay{
+      position:fixed;inset:0;background:rgba(0,0,0,0.8);
+      display:flex;justify-content:center;align-items:center;
+      z-index:999;visibility:hidden;opacity:0;transition:0.3s;
+    }
+    .loading-overlay.show{visibility:visible;opacity:1}
+    .spinner{
+      width:40px;height:40px;border:4px solid var(--primary);
+      border-top-color:transparent;border-radius:50%;
+      animation:spin 1s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+
+    /* Table */
+    table{width:100%;border-collapse:collapse;font-size:13px}
+    th{text-align:left;color:var(--muted);padding:8px;border-bottom:1px solid var(--border)}
+    td{padding:8px;border-bottom:1px solid #1f1b3a}
+  </style>
+</head>
+<body>
+
+<div class="nebula"></div>
+<div class="stars"></div>
+
+<header class="topbar">
+  <div class="brand">NEBULA PANEL</div>
+  <nav class="nav-links">
+    <a href="#" onclick="nav('dashboard')" class="active" id="nav-dashboard">Home</a>
+    <a href="#" onclick="nav('create')" id="nav-create">Create</a>
+    <a href="#" onclick="nav('history')" id="nav-history">History</a>
+  </nav>
+</header>
+
+<main>
+  <section id="dashboard" class="page active">
+    <div class="card">
+      <h2>Halo, Admin!</h2>
+      <p class="sub" id="clock">--:--:--</p>
+      
+      <div class="stat"><span>IP Address</span><b id="ip">Loading...</b></div>
+      <div class="stat"><span>Status Baterai</span><b id="baterai">Mengecek...</b></div>
+      <div class="stat"><span>Device</span><b id="ua">Android</b></div>
+    </div>
+    <button onclick="nav('create')">Buat Panel Sekarang</button>
+  </section>
+
+  <section id="create" class="page">
+    <div class="card">
+      <h2>Buat Akun Panel</h2>
+      <p class="sub">Server Pterodactyl</p>
+
+      <label>Username (Tanpa Spasi)</label>
+      <input type="text" id="panelUser" placeholder="contoh: user123">
+
+      <label>Pilih Paket</label>
+      <select id="panelPaket">
+        <option value="">-- Pilih RAM --</option>
+        <option value="1gb">RAM 1GB</option>
+        <option value="2gb">RAM 2GB</option>
+        <option value="3gb">RAM 3GB</option>
+        <option value="4gb">RAM 4GB</option>
+        <option value="5gb">RAM 5GB</option>
+        <option value="unli">UNLIMITED</option>
+      </select>
+
+      <button onclick="buatPanel()">DEPLOY SERVER</button>
+    </div>
+
+    <div id="step2" class="card hidden">
+      <div class="success-box">
+        <h3>✅ Berhasil Dibuat!</h3><br>
+        <b>URL:</b> <a id="resLink" href="#" target="_blank">Login Disini</a><br>
+        <b>User:</b> <span id="resUser">-</span><br>
+        <b>Pass:</b> <span id="resPass">-</span><br>
+        <b>Email:</b> <span id="resEmail">-</span>
+      </div>
+      <button onclick="resetForm()" style="background:#2e2a55">Buat Lagi</button>
+    </div>
+  </section>
+
+  <section id="history" class="page">
+    <div class="card">
+      <h2>Riwayat</h2>
+      <div style="overflow-x:auto">
+        <table id="historyTable">
+          <thead>
+            <tr><th>User</th><th>Pass</th><th>Paket</th><th>Aksi</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <button onclick="clearHistory()" style="background:#e94560;margin-top:15px">Hapus Data</button>
+    </div>
+  </section>
+</main>
+
+<div id="loadingOverlay" class="loading-overlay">
+  <div style="text-align:center;color:#fff">
+    <div class="spinner" style="margin:0 auto 15px"></div>
+    <p>Sedang memproses...</p>
+  </div>
+</div>
+
+<script>
+// ================= KONFIGURASI =================
+// Ganti DOMAIN dengan alamat Panel Pterodactyl tujuan (bukan alamat web ini)
+const DOMAIN = "https://public-panel.kynasx.web.id"; 
+// Ganti PLTA dengan API Key Pterodactyl (Awalan ptla_...)
+const PLTA   = "ptla_CFTEq4SYQqcvgs3kcIM3k1H0gsuzUvhmiiH6TkXAOvj"; 
+// ===============================================
+
+// NAVIGASI
+function nav(pageId){
+  document.querySelectorAll('.page').forEach(el => el.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  document.querySelectorAll('.nav-links a').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-'+pageId).classList.add('active');
+}
+
+// JAM & INFO
+setInterval(() => {
+  document.getElementById('clock').innerText = new Date().toLocaleTimeString('id-ID');
+}, 1000);
+
+fetch('https://api.ipify.org?format=json')
+  .then(r=>r.json()).then(d=>document.getElementById('ip').innerText=d.ip);
+
+if(navigator.getBattery){
+  navigator.getBattery().then(b => {
+    document.getElementById('baterai').innerText = Math.round(b.level*100) + "%";
+  });
+}
+
+// LOGIKA CREATE PANEL
+const specs = {
+  "1gb":{ram:1000, disk:1000, cpu:50},
+  "2gb":{ram:2000, disk:2000, cpu:80},
+  "3gb":{ram:3000, disk:3000, cpu:100},
+  "4gb":{ram:4000, disk:4000, cpu:120},
+  "5gb":{ram:5000, disk:5000, cpu:150},
+  "unli":{ram:0, disk:0, cpu:0} // 0 biasanya berarti unlimited di ptero
+};
+
+async function buatPanel(){
+  const user = document.getElementById('panelUser').value.replace(/\s/g, '').trim();
+  const paket = document.getElementById('panelPaket').value;
+  
+  if(!user || !paket) return alert("❌ Username dan Paket tidak boleh kosong!");
+
+  const loading = document.getElementById('loadingOverlay');
+  loading.classList.add('show');
+
+  const conf = specs[paket];
+  
+  // URL API Wrapper (Pastikan API ini aktif)
+  const apiUrl = `https://api.resellergaming.my.id/pterodactyl/addpanel?domain=${encodeURIComponent(DOMAIN)}&plta=${PLTA}&username=${user}&disk=${conf.disk}&cpu=${conf.cpu}&ram=${conf.ram}`;
+
+  try {
+    const req = await fetch(apiUrl);
+    const res = await req.json();
+
+    if(res.user && res.user.attributes){
+      const data = res.user.attributes;
+      
+      // Tampilkan Hasil
+      document.getElementById('step2').classList.remove('hidden');
+      document.getElementById('resUser').innerText = data.username;
+      // Password biasanya digenerate otomatis sama API jika kosong
+      document.getElementById('resPass').innerText = data.password || "(Sama dengan username)"; 
+      document.getElementById('resEmail').innerText = data.email;
+      
+      // Fix Link agar mengarah ke DOMAIN panel
+      const btnLink = document.getElementById('resLink');
+      btnLink.href = DOMAIN;
+      btnLink.innerText = DOMAIN.replace('https://','');
+
+      // Simpan History
+      saveHistory(data.username, data.password || data.username, paket.toUpperCase());
+      
+      alert(`✅ Sukses! Akun ${data.username} berhasil dibuat.`);
+    } else {
+      alert("⚠️ Gagal: " + (res.error || "Respon API tidak valid"));
+    }
+  } catch (err) {
+    alert("❌ Error Network: " + err.message);
+  } finally {
+    loading.classList.remove('show');
+  }
+}
+
+function resetForm(){
+  document.getElementById('step2').classList.add('hidden');
+  document.getElementById('panelUser').value = "";
+}
+
+// LOGIKA HISTORY (LOCALSTORAGE)
+function saveHistory(u, p, pak){
+  let hist = JSON.parse(localStorage.getItem('myPanelHist') || "[]");
+  hist.unshift({u, p, pak, date: new Date().toLocaleString()});
+  localStorage.setItem('myPanelHist', JSON.stringify(hist));
+  renderHistory();
+}
+
+function renderHistory(){
+  const tbody = document.querySelector('#historyTable tbody');
+  const hist = JSON.parse(localStorage.getItem('myPanelHist') || "[]");
+  
+  if(hist.length === 0){
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;padding:15px">Belum ada data</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = hist.map(h => `
+    <tr>
+      <td>${h.u}</td>
+      <td>${h.p}</td>
+      <td>${h.pak}</td>
+      <td><a href="${DOMAIN}" target="_blank" style="color:var(--accent)">Login</a></td>
+    </tr>
+  `).join('');
+}
+
+function clearHistory(){
+  if(confirm("Hapus semua riwayat?")){
+    localStorage.removeItem('myPanelHist');
+    renderHistory();
+  }
+}
+
+// Load saat start
+renderHistory();
+</script>
+
+</body>
+</html>
